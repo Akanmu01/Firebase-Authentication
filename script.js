@@ -11,7 +11,7 @@ $(document).ready(function(){
     appId: "1:314131406478:web:6dfff647078451a60173df"
   };
   firebase.initializeApp(config);
-
+  
   //create firebase references
   var Auth = firebase.auth(); 
   var dbRef = firebase.database();
