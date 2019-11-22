@@ -1,10 +1,7 @@
-<!-- The core Firebase JS SDK is always required and must be listed first -->
-
-<!-- TODO: Add SDKs for Firebase products that you want to use
-     https://firebase.google.com/docs/web/setup#available-libraries -->
-
-  // Your web app's Firebase configuration
-  var firebaseConfig = {
+  firebase.initializeApp(firebaseConfig);
+$(document).ready(function(){
+  //initialize the firebase app
+ var firebaseConfig = {
     apiKey: "AIzaSyBpSpFWOD3BCOJxnawyVoUQAthljz-iP8E",
     authDomain: "my-first-project-141c6.firebaseapp.com",
     databaseURL: "https://my-first-project-141c6.firebaseio.com",
@@ -13,407 +10,167 @@
     messagingSenderId: "314131406478",
     appId: "1:314131406478:web:6dfff647078451a60173df"
   };
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
+  firebase.initializeApp(config);
 
-  (function (jQuery, Firebase, Path) {
-    "use strict";
+  //create firebase references
+  var Auth = firebase.auth(); 
+  var dbRef = firebase.database();
+  var contactsRef = dbRef.ref('contacts')
+  var usersRef = dbRef.ref('users')
+  var auth = null;
 
-  //Firebase.INTERNAL.forceLongPolling();
-  
-    // the main firebase reference
-    var rootRef = new Firebase('https://vvvv.firebaseio.com/');
-
-    // pair our routes to our form elements and controller
-    var routeMap = {
-        '#/': {
-            form: 'frmLogin',
-            controller: 'login'
-        },
-            '#/logout': {
-            form: 'frmLogout',
-            controller: 'logout'
-        },
-            '#/register': {
-            form: 'frmRegister',
-            controller: 'register'
-        },
-            '#/profile': {
-            form: 'frmProfile',
-            controller: 'profile',
-            authRequired: true // must be logged in to get here
-        },
-            '#/stuff': {
-            form: 'frmStuff',
-            controller: 'stuff',
-            authRequired: true // must be logged in to get here
-        },
+  //Register
+  $('#registerForm').on('submit', function (e) {
+    e.preventDefault();
+    $('#registerModal').modal('hide');
+    $('#messageModalLabel').html(spanText('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
+    $('#messageModal').modal('show');
+    var data = {
+      email: $('#registerEmail').val(), //get the email from Form
+      firstName: $('#registerFirstName').val(), // get firstName
+      lastName: $('#registerLastName').val(), // get lastName
     };
-
-    // create the object to store our controllers
-    var controllers = {};
-
-    // store the active form shown on the page
-    var activeForm = null;
-
-    var alertBox = $('#alert');
-
-    function routeTo(route) {
-        console.log('Route to: ' + route)
-        window.location.href = '#/' + route;
+    var passwords = {
+      password : $('#registerPassword').val(), //get the pass from Form
+      cPassword : $('#registerConfirmPassword').val(), //get the confirmPass from Form
     }
+    if( data.email != '' && passwords.password != ''  && passwords.cPassword != '' ){
+      if( passwords.password == passwords.cPassword ){
+        //create the user
+        
+        firebase.auth()
+          .createUserWithEmailAndPassword(data.email, passwords.password)
+          .then(function(user) {
+            return user.updateProfile({
+              displayName: data.firstName + ' ' + data.lastName
+            })
+          })
+          .then(function(user){
+            //now user is needed to be logged in to save data
+            auth = user;
+            //now saving the profile data
+            usersRef.child(user.uid).set(data)
+              .then(function(){
+                console.log("User Information Saved:", user.uid);
+              })
+            $('#messageModalLabel').html(spanText('Success!', ['center', 'success']))
+            
+            $('#messageModal').modal('hide');
+          })
+          .catch(function(error){
+            console.log("Error creating user:", error);
+            $('#messageModalLabel').html(spanText('ERROR: '+error.code, ['danger']))
+          });
+      } else {
+        //password and confirm password didn't match
+        $('#messageModalLabel').html(spanText("ERROR: Passwords didn't match", ['danger']))
+      }
+    }  
+  });
 
-    // Handle third party login providers
-    // returns a promise
-    function thirdPartyLogin(provider) {
-        var deferred = $.Deferred();
+  //Login
+  $('#loginForm').on('submit', function (e) {
+    e.preventDefault();
+    $('#loginModal').modal('hide');
+    $('#messageModalLabel').html(spanText('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
+    $('#messageModal').modal('show');
 
-        rootRef.authWithOAuthPopup(provider, function (err, user) {
-            if (err) {
-                deferred.reject(err);
-            }
-
-            if (user) {
-                deferred.resolve(user);
-            }
-        });
-
-        return deferred.promise();
-    };
-
-    // Handle Email/Password login
-    // returns a promise
-    function authWithPassword(userObj) {
-      console.log('authWithPassword: ' + userObj)
-        var deferred = $.Deferred();
-        console.log(userObj);
-        rootRef.authWithPassword(userObj, function onAuth(err, user) {
-          console.log('rootRef.authWithPassword: ')
-            if (err) {
-                deferred.reject(err);
-              console.log('rootRef.authWithPassword: deferred.reject')
-            }
-
-            if (user) {
-                console.log('rootRef.authWithPassword: deferred.resolve')
-                deferred.resolve(user);
-            }
-
-        });
-
-        return deferred.promise();
-    }
-
-    // create a user but not login
-    // returns a promsie
-    function createUser(userObj) {
-      console.log('createUser: ' + userObj);
-        var deferred = $.Deferred();
-        rootRef.createUser(userObj, function (err) {
-            console.log('rootRef.createUser');
-            if (!err) {
-              console.log('rootRef.createUser: !err');
-                deferred.resolve();
-            } else {
-              console.log('rootRef.createUser: err');
-                deferred.reject(err);
-            }
-
-        });
-
-        return deferred.promise();
-    }
-
-    // Create a user and then login in
-    // returns a promise
-    function createUserAndLogin(userObj) {
-        return createUser(userObj)
-            .then(function () {
-            return authWithPassword(userObj);
+    if( $('#loginEmail').val() != '' && $('#loginPassword').val() != '' ){
+      //login the user
+      var data = {
+        email: $('#loginEmail').val(),
+        password: $('#loginPassword').val()
+      };
+      firebase.auth().signInWithEmailAndPassword(data.email, data.password)
+        .then(function(authData) {
+          auth = authData;
+          $('#messageModalLabel').html(spanText('Success!', ['center', 'success']))
+          $('#messageModal').modal('hide');
+        })
+        .catch(function(error) {
+          console.log("Login Failed!", error);
+          $('#messageModalLabel').html(spanText('ERROR: '+error.code, ['danger']))
         });
     }
+  });
 
-    // authenticate anonymously
-    // returns a promise
-    function authAnonymously() {
-        var deferred = $.Deferred();
-        rootRef.authAnonymously(function (err, authData) {
+  $('#logout').on('click', function(e) {
+    e.preventDefault();
+    firebase.auth().signOut()
+  });
 
-            if (authData) {
-                deferred.resolve(authData);
+  //save contact
+  $('#contactForm').on('submit', function( event ) {  
+    event.preventDefault();
+    if( auth != null ){
+      if( $('#name').val() != '' || $('#email').val() != '' ){
+        contactsRef.child(auth.uid)
+          .push({
+            name: $('#name').val(),
+            email: $('#email').val(),
+            location: {
+              city: $('#city').val(),
+              state: $('#state').val(),
+              zip: $('#zip').val()
             }
-
-            if (err) {
-                deferred.reject(err);
-            }
-
-        });
-
-        return deferred.promise();
+          })
+          document.contactForm.reset();
+      } else {
+        alert('Please fill at-lease name or email!');
+      }
+    } else {
+      //inform user to login
     }
+  });
 
-    // route to the specified route if sucessful
-    // if there is an error, show the alert
-    function handleAuthResponse(promise, route) {
-      console.log('handleAuthResponse');
-        $.when(promise)
-            .then(function (authData) {
-
-            // route
-            routeTo(route);
-
-        }, function (err) {
-            console.log(err);
-            // pop up error
-          console.log('handleAuthResponse err:' + err);
-            showAlert({
-                title: err.code,
-                detail: err.message,
-                className: 'alert-danger'
-            });
-
-        });
-    }
-
-    // options for showing the alert box
-    function showAlert(opts) {
-        var title = opts.title;
-        var detail = opts.detail;
-        var className = 'alert ' + opts.className;
-
-        alertBox.removeClass().addClass(className);
-        alertBox.children('#alert-title').text(title);
-        alertBox.children('#alert-detail').text(detail);
-    }
-
-    /// Controllers
-    ////////////////////////////////////////
-
-    controllers.login = function (form) {
-console.log('controllers.login: ' + form);
-        // Form submission for logging in
-        form.on('submit', function (e) {
-
-            var userAndPass = $(this).serializeObject();
-            var loginPromise = authWithPassword(userAndPass);
-            e.preventDefault();
-
-            handleAuthResponse(loginPromise, 'profile');
-
-        });
-
-        // Social buttons
-        form.children('.bt-social').on('click', function (e) {
-
-            var $currentButton = $(this);
-            var provider = $currentButton.data('provider');
-            var socialLoginPromise;
-            e.preventDefault();
-
-            socialLoginPromise = thirdPartyLogin(provider);
-            handleAuthResponse(socialLoginPromise, 'profile');
-
-        });
-
-        form.children('#btAnon').on('click', function (e) {
-            e.preventDefault();
-            handleAuthResponse(authAnonymously(), 'profilex');
-        });
-
-    };
-
-    // logout immediately when the controller is invoked
-    controllers.logout = function (form) {
-        rootRef.unauth();
-    };
-
-    controllers.register = function (form) {
-
-        // Form submission for registering
-        form.on('submit', function (e) {
-
-            var userAndPass = $(this).serializeObject();
-            var loginPromise = createUserAndLogin(userAndPass);
-            e.preventDefault();
-
-            handleAuthResponse(loginPromise, 'profile');
-
-        });
-
-    };
-
-    controllers.profile = function (form) {
-      console.log('controllers.profile: ' + form);
-        // Check the current user
-        var user = rootRef.getAuth();
-        var userRef;
-
-        // If no current user send to register page
-        if (!user) {
-            console.log('No user, reroute');
-            routeTo('register');
-            return;
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      auth = user;
+      $('body').removeClass('auth-false').addClass('auth-true');
+      usersRef.child(user.uid).once('value').then(function (data) {
+        var info = data.val();
+        if(user.photoUrl) {
+          $('.user-info img').show();
+          $('.user-info img').attr('src', user.photoUrl);
+          $('.user-info .user-name').hide();
+        } else if(user.displayName) {
+          $('.user-info img').hide();
+          $('.user-info').append('<span class="user-name">'+user.displayName+'</span>');
+        } else if(info.firstName) {
+          $('.user-info img').hide();
+          $('.user-info').append('<span class="user-name">'+info.firstName+'</span>');
         }
-
-        // Load user info
-        console.log('Load user info: ' + user);
-        userRef = rootRef.child('users').child(user.uid);
-        userRef.once('value', function (snap) {
-            var user = snap.val();
-            if (!user) {
-                return;
-            }
-
-            // set the fields
-          console.log('set the fields: ' + user);
-            form.find('.js-name').text(user.name);
-            form.find('#txtName').val(user.name);
-            form.find('#txtStuff').val(user.stuff);
-            form.find('#ddlDino').val(user.favoriteDinosaur);
-        });
-
-        // Save user's info to Firebase
-        form.on('submit', function (e) {
-            e.preventDefault();
-            var userInfo = $(this).serializeObject();
-
-            userRef.set(userInfo, function onComplete() {
-
-                // show the message if write is successful
-                showAlert({
-                    title: 'Successfully saved!',
-                    detail: 'You are still logged in',
-                    className: 'alert-success'
-                });
-
-            });
-        });
-
-    };
-  
-   controllers.stuff = function (form) {
-      console.log('controllers.stuff: ' + form);
-        // Check the current user
-        var user = rootRef.getAuth();
-        var userRef;
-
-        // If no current user send to register page
-        if (!user) {
-            console.log('No user, reroute');
-            routeTo('register');
-            return;
-        }
-
-        // Load user info
-        console.log('Load user info: ' + user);
-        userRef = rootRef.child('users').child(user.uid);
-        userRef.once('value', function (snap) {
-            var user = snap.val();
-            if (!user) {
-                return;
-            }
-
-            // set the fields
-          console.log('set the fields: ' + user);
-            form.find('.js-stuff').text(user.stuff);
-          
-    rootRef.child("events").on("value", function(snapshot) {
-      console.log(snapshot);
-  console.log(snapshot.val());
-}, function (errorObject) {
-  console.log("The read failed: " + errorObject.code);
-});    
-        });
-
-    };
-
-    /// Routing
-    ////////////////////////////////////////
-
-    // Handle transitions between routes
-    function transitionRoute(path) {
-        // grab the config object to get the form element and controller
-        var formRoute = routeMap[path];
-        var currentUser = rootRef.getAuth();
-
-        // if authentication is required and there is no
-        // current user then go to the register page and
-        // stop executing
-        if (formRoute.authRequired && !currentUser) {
-          console.log('formRoute.authRequired && !currentUser');
-            routeTo('register');
-            return;
-        }
-
-        // wrap the upcoming form in jQuery
-        var upcomingForm = $('#' + formRoute.form);
-
-        // if there is no active form then make the current one active
-        if (!activeForm) {
-            activeForm = upcomingForm;
-        }
-
-        // hide old form and show new form
-        activeForm.hide();
-        upcomingForm.show().hide().fadeIn(750);
-
-        // remove any listeners on the soon to be switched form
-        activeForm.off();
-
-        // set the new form as the active form
-        activeForm = upcomingForm;
-
-        // invoke the controller
-        controllers[formRoute.controller](activeForm);
+      });
+      contactsRef.child(user.uid).on('child_added', onChildAdd);
+    } else {
+      // No user is signed in.
+      $('body').removeClass('auth-true').addClass('auth-false');
+      auth && contactsRef.child(auth.uid).off('child_added', onChildAdd);
+      $('#contacts').html('');
+      auth = null;
     }
+  });
+});
 
-    // Set up the transitioning of the route
-    function prepRoute() {
-        transitionRoute(this.path);
-    }
+function onChildAdd (snap) {
+  $('#contacts').append(contactHtmlFromObject(snap.key, snap.val()));
+}
+ 
+//prepare contact object's HTML
+function contactHtmlFromObject(key, contact){
+  return '<div class="card contact" style="width: 18rem;" id="'+key+'">'
+    + '<div class="card-body">'
+      + '<h5 class="card-title">'+contact.name+'</h5>'
+      + '<h6 class="card-subtitle mb-2 text-muted">'+contact.email+'</h6>'
+      + '<p class="card-text" title="' + contact.location.zip+'">'
+        + contact.location.city + ', '
+        + contact.location.state
+      + '</p>'
+    + '</div>'
+  + '</div>';
+}
 
-
-    /// Routes
-    ///  #/         - Login
-    //   #/logout   - Logut
-    //   #/register - Register
-    //   #/profile  - Profile
-
-    Path.map("#/").to(prepRoute);
-    Path.map("#/logout").to(prepRoute);
-    Path.map("#/register").to(prepRoute);
-    Path.map("#/profile").to(prepRoute);
-    Path.map("#/stuff").to(prepRoute);
-
-    Path.root("#/");
-
-    /// Initialize
-    ////////////////////////////////////////
-
-    $(function () {
-
-        // Start the router
-        Path.listen();
-
-        // whenever authentication happens send a popup
-        rootRef.onAuth(function globalOnAuth(authData) {
-
-            if (authData) {
-                showAlert({
-                    title: 'Logged in!',
-                    detail: 'Using ' + authData.provider,
-                    className: 'alert-success'
-                });
-            } else {
-                showAlert({
-                    title: 'You are not logged in',
-                    detail: '',
-                    className: 'alert-info'
-                });
-            }
-
-        });
-
-    });
-
-}(window.jQuery, window.Firebase, window.Path))
+function spanText(textStr, textClasses) {
+  var classNames = textClasses.map(c => 'text-'+c).join(' ');
+  return '<span class="'+classNames+'">'+ textStr + '</span>';
+}
