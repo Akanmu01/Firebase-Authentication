@@ -1,3 +1,15 @@
+$(document).ready(function(){
+  //initialize the firebase app
+  var config = {
+    apiKey: "AIzaSyCKNcULQZxFMYioXei32XNWQVoeutz4XDA",
+    authDomain: "contact-book-new.firebaseapp.com",
+    databaseURL: "https://contact-book-new.firebaseio.com",
+    projectId: "contact-book-new",
+    storageBucket: "contact-book-new.appspot.com",
+    messagingSenderId: "473268388365"
+  };
+  firebase.initializeApp(config);
+
   //create firebase references
   var Auth = firebase.auth(); 
   var dbRef = firebase.database();
@@ -152,6 +164,8 @@ function contactHtmlFromObject(key, contact){
         + contact.location.city + ', '
         + contact.location.state
       + '</p>'
+      // + '<a href="#" class="card-link">Card link</a>'
+      // + '<a href="#" class="card-link">Another link</a>'
     + '</div>'
   + '</div>';
 }
@@ -160,3 +174,4 @@ function spanText(textStr, textClasses) {
   var classNames = textClasses.map(c => 'text-'+c).join(' ');
   return '<span class="'+classNames+'">'+ textStr + '</span>';
 }
+

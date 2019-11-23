@@ -1,31 +1,28 @@
 <!DOCTYPE html>
-<html ng-app>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <title>repl.it</title>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="https://time2hack.com/favicon.png" type="image/png">
-    <link rel="icon" href="https://time2hack.com/favicon.png" type="image/png">
-    <title>Time to Hack: Simple Login with Firebase Web API</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
-    <script src="https://code.angularjs.org/1.7.8/angular.min.js"></script>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="https://time2hack.com/favicon.png" type="image/png">
+  <link rel="icon" href="https://time2hack.com/favicon.png" type="image/png">
+  <title>Firebase authentication</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js"></script>
 </head>
-<body>
-   <body class="auth-false">
+<body class="auth-false">
   <div class="container">
     <header class="clearfix">
-      <h1>Contact Store Application</h1>
+      <h1>Firebase Auth Application</h1>
       <div class="userAuth unauthenticated pull-right">
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#registerModal">Register</button>
         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#loginModal">Login</button>
       </div>
       <div class="userAuth authenticated pull-right">
         <span class="user-info">
-          <img src="./user.svg" alt="User" class="rounded-circle">
+          <img src="user.svg" alt="User" class="rounded-circle">
         </span>
         <button type="button" class="btn btn-success" id="logout">Logout</button>
       </div>
@@ -169,9 +166,12 @@
       </div>
     </div>
   </div>
+
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/4.3.1/firebase.js"></script>
+  <!-- Contacts Store JavaScript -->
+  <script src="./script.js"></script>
 </body>
 </html>
