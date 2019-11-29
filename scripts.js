@@ -16,6 +16,7 @@ $(document).ready(function(){
   var usersRef = dbRef.ref('users')
   var auth = null;
 
+  
   //Register
   $('#registerForm').on('submit', function (e) {
     e.preventDefault();
