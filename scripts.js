@@ -1,16 +1,15 @@
 $(document).ready(function(){
-  //initialize the firebase app
+  initialize the firebase app
   var config = {
-    apiKey: "AIzaSyCKNcULQZxFMYioXei32XNWQVoeutz4XDA",
-    authDomain: "contact-book-new.firebaseapp.com",
-    databaseURL: "https://contact-book-new.firebaseio.com",
-    projectId: "contact-book-new",
-    storageBucket: "contact-book-new.appspot.com",
-    messagingSenderId: "473268388365"
+    apiKey: "",
+    authDomain: "",
+    databaseURL: "",
+    projectId: "",
+    messagingSenderId: ""
   };
   firebase.initializeApp(config);
 
-  //create firebase references
+  create firebase references
   var Auth = firebase.auth(); 
   var dbRef = firebase.database();
   var contactsRef = dbRef.ref('contacts')
@@ -91,6 +90,35 @@ $(document).ready(function(){
         });
     }
   });
+
+
+
+//Reset Password
+$('#passwordForm').on('submit', function (e) {
+  e.preventDefault();
+  $('#passwordModal').modal('hide');
+  $('#messageModalLabel').html(spanText('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
+  $('#messageModal').modal('show');
+
+  if( $('#loginEmail').val() {
+    //reset the user password with Email address
+    var data = {
+      email: $('#loginEmail').val(),
+    };
+    firebase.auth().resetPasswordWithEmail(data.email)
+      .then(function(authData) {
+        auth = authData;
+        $('#messageModalLabel').html(spanText('Success!', ['center', 'success']))
+        $('#messageModal').modal('hide');
+      })
+      .catch(function(error) {
+        console.log("Reset Password Failed!", error);
+        $('#messageModalLabel').html(spanText('ERROR: '+error.code, ['danger']))
+      });
+  }
+});
+
+
 
   $('#logout').on('click', function(e) {
     e.preventDefault();
